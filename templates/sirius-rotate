@@ -1,0 +1,18 @@
+/data/logs/{{ ansible_fqdn }}/*/*.log
+/data/logs/{{ ansible_fqdn }}/*/*/*.log {
+        daily
+        rotate 365
+        copytruncate
+        missingok
+        notifempty
+        compress
+        delaycompress
+        dateext
+        dateformat -%Y%m%d-%s
+	sharedscripts
+        postrotate
+#                /bin/systemctl reload-or-try-restart syslog-ng
+                /bin/systemctl restart snmptrapd.service
+                /bin/systemctl restart fluent-bit.service
+        endscript
+}

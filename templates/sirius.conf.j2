@@ -1,0 +1,254 @@
+#######################################
+# SOURCES 
+#######################################
+source s_gobetween {
+   udp(port(514) flags(no-multi-line));
+};
+
+#######################################
+# FILTERS 
+#######################################
+filter f_not_healthcheck { {% for item in syslog_ignore %}not match("{{ item }}" value("HOST")) {{"and" if not loop.last else "" }} {% endfor %}; };
+
+##### NETWORK #####
+filter f_adva {
+	   netmask( "10.22.0.0/24" )
+	or netmask( "10.22.1.0/24" )
+	or netmask( "10.22.2.0/24" )
+	or netmask( "10.22.3.0/24" )
+	or netmask( "10.22.4.0/24" )
+	or netmask( "10.22.5.0/24" )
+	or netmask( "10.22.6.0/24" )
+        or netmask( "10.26.0.0/16" )
+	or netmask( "172.26.0.0/16" )
+};
+filter f_nokia { 			#switch and router
+	   netmask( "10.25.0.0/16" )
+};
+filter f_dslam { 
+	   netmask( "10.27.0.0/16" )
+};
+filter f_olt { 
+	   netmask( "10.28.0.0/16" )
+};
+filter f_radiator { 
+	   netmask( "10.1.1.6/32" )
+	or netmask( "10.64.65.0/24" )
+};
+
+filter f_rad { 
+	   netmask( "10.32.0.0/24" )
+	or netmask( "10.32.64.0/24" )
+	or netmask( "10.32.128.0/24" )
+	or netmask( "10.32.192.0/24" )
+	or netmask( "10.33.0.0/24" )
+	or netmask( "10.33.64.0/24" )
+	or netmask( "10.33.128.0/24" )
+	or netmask( "10.33.192.0/24" )
+	or netmask( "10.34.0.0/24" )
+};
+
+##### VPN #####
+filter f_vpn { 
+	   netmask( "10.64.50.0/24" ) # VPN
+};
+
+##### SYSTEM #####
+filter f_vms_sys { 
+	   netmask( "10.64.32.0/20" )
+	or netmask( "10.64.48.0/20" )
+	or netmask( "10.64.64.0/21" )
+	or netmask( "10.107.0.0/24" )
+	or netmask( "192.168.33.0/24" )
+};
+
+##### SI #####
+filter f_vms_si { 
+	   netmask( "10.108.0.0/24" )
+	or netmask( "10.64.128.0/24" )
+	or netmask( "10.64.129.0/24" )
+	or netmask( "10.64.130.0/24" )
+	or netmask( "10.64.131.0/24" )
+};
+
+##### FORTINET #####
+filter f_fortinet { 
+	   netmask( "10.64.243.4/32" )
+	or netmask( "10.64.243.12/32" )
+	or netmask( "192.168.59.1/32" )
+	or netmask( "10.128.64.6/32" )
+	or netmask( "10.128.64.8/32" )
+};
+
+##### Divers #####
+filter f_divers { 
+	    not netmask( "10.22.0.0/24" )       #adva 
+	and not netmask( "10.22.1.0/24" )       #adva
+	and not netmask( "10.22.2.0/24" )       #adva
+	and not netmask( "10.22.3.0/24" )       #adva
+	and not netmask( "10.22.4.0/24" )       #adva
+	and not netmask( "10.22.5.0/24" )       #adva
+	and not netmask( "10.22.6.0/24" )       #adva
+	and not netmask( "10.25.0.0/16" )       #nokia
+	and not netmask( "10.26.0.0/16" )       #adva 
+	and not netmask( "10.27.0.0/16" )       #dslam
+	and not netmask( "10.28.0.0/16" )       #OLT
+	and not netmask( "172.26.0.0/16" )      #adva
+	and not netmask( "10.1.1.6/32" )	#Radiator LAB
+	and not netmask( "10.64.65.0/24" )	#Radiator
+	and not netmask( "10.64.50.0/24" )	#VPN
+	and not netmask( "10.32.0.0/24" )       #rad
+	and not netmask( "10.32.64.0/24" )      #rad
+	and not netmask( "10.32.128.0/24" )     #rad
+	and not netmask( "10.32.192.0/24" )     #rad
+	and not netmask( "10.33.0.0/24" )       #rad
+	and not netmask( "10.33.64.0/24" )      #rad
+	and not netmask( "10.33.128.0/24" )     #rad
+	and not netmask( "10.33.192.0/24" )     #rad
+	and not netmask( "10.34.0.0/24" )       #rad
+	and not netmask( "10.64.32.0/20" )	#vms system
+	and not netmask( "10.64.48.0/20" )	#vms system
+	and not netmask( "10.64.64.0/21" )	#vms system
+	and not netmask( "192.168.33.0/24" )	#vms system
+	and not netmask( "10.107.0.0/24" )	#vms system Enix admin
+	and not netmask( "10.108.0.0/24" )	#vms si test
+	and not netmask( "10.64.128.0/24" )	#vms si prod
+	and not netmask( "10.64.129.0/24" )	#vms si prep
+	and not netmask( "10.64.130.0/24" )	#vms si sand
+	and not netmask( "10.64.131.0/24" )	#vms si inte
+	and not netmask( "10.64.243.4/32" )	#fortinet ext
+	and not netmask( "10.128.64.6/32" )     #fortinet ext
+	and not netmask( "10.64.243.12/32" )    #fortinet int
+	and not netmask( "10.128.64.8/32" )     #fortinet int
+	and not netmask( "192.168.59.1/32" )    #fortinet siege
+};
+
+#######################################
+# TEMPLATES 
+#######################################
+template t_prefix {
+template("$ISODATE $HOST $LEVEL_NUM $MSG\n"); template_escape(no); };
+
+template t_noprefix {
+template("$MSG\n"); template_escape(no); };
+
+#######################################
+# DESTINATIONS
+#######################################
+destination d_adva {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/network/adva/adva.log" template(t_prefix));
+};
+destination d_nokia {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/network/nokia/nokia.log" template(t_prefix));
+};
+destination d_dslam {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/network/dslam/dslam.log" template(t_prefix));
+};
+destination d_olt {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/network/olt/olt.log" template(t_prefix));
+};
+destination d_radiator {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/network/radiator/radiator.log" template(t_prefix));
+};
+destination d_rad {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/network/rad/rad.log" template(t_prefix));
+};
+destination d_vpn {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/vpn/vpn.log" template(t_prefix));
+};
+destination d_vms_sys {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/vms_sys/vms_sys.log" template(t_prefix));
+};
+destination d_vms_si {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/vms_si/vms_si.log" template(t_prefix));
+};
+destination d_fortinet {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/fortinet/fortinet.log" template(t_prefix));
+};
+destination d_divers {
+   file("{{ logs_folder }}/{{ ansible_fqdn }}/divers/${HOST}/${HOST}.log" template(t_prefix));
+};
+
+
+#######################################
+# RULES
+#######################################
+
+# ADVA
+log { 
+   source(s_gobetween); 
+   filter(f_adva); 
+   destination(d_adva);
+};
+
+# NOKIA / SWITCH AND ROUTER
+log { 
+   source(s_gobetween); 
+   filter(f_nokia); 
+   destination(d_nokia);
+};
+
+# HWI / DSLAMS
+log { 
+   source(s_gobetween); 
+   filter(f_dslam); 
+   destination(d_dslam);
+};
+
+# OLT
+log { 
+   source(s_gobetween); 
+   filter(f_olt); 
+   destination(d_olt);
+};
+
+#Radiator
+log {
+   source(s_gobetween);
+   filter(f_radiator);
+   destination(d_radiator);
+};
+
+#RAD
+log {
+   source(s_gobetween);
+   filter(f_rad);
+   destination(d_rad);
+};
+
+#VPN
+log {
+   source(s_gobetween);
+   filter(f_vpn);
+   destination(d_vpn);
+};
+
+# VMS sys
+log {
+   source(s_gobetween);
+   #filter(f_not_healthcheck); 
+   filter(f_vms_sys);
+   destination(d_vms_sys);
+};
+
+# VMS SI
+log {
+   source(s_gobetween);
+   filter(f_vms_si);
+   destination(d_vms_si);
+};
+
+# FORTINET
+log {
+   source(s_gobetween);
+   filter(f_fortinet);
+   destination(d_fortinet);
+};
+
+#DIVERS
+log { 
+   source(s_gobetween); 
+   #filter(f_not_healthcheck); 
+   filter(f_divers); 
+   destination(d_divers);
+};

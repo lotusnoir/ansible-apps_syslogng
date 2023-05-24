@@ -1,0 +1,40 @@
+---
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: "Install tasks"
+  when: '"syslog-ng" not in ansible_facts.packages'
+  block:
+    - name: Install syslog-ng package
+      ansible.builtin.package:
+        name: syslog-ng
+        state: present
+
+    - name: Enable and start syslog-ng
+      ansible.builtin.service:
+        name: syslog-ng
+        state: started
+        enabled: true
+
+- name: Copy syslog-ng.conf to /etc/syslog-ng/
+  ansible.builtin.template:
+    src: syslog-ng.conf.j2
+    dest: /etc/syslog-ng/syslog-ng.conf
+    mode: '0644'
+  notify:
+    - restart syslog-ng
+
+- name: Copy sirius.conf to /etc/syslog-ng/conf.d/
+  ansible.builtin.template:
+    src: sirius.conf.j2
+    dest: /etc/syslog-ng/conf.d/sirius.conf
+    mode: '0644'
+  notify:
+    - restart syslog-ng
+
+- name: Add conf to logrotate
+  ansible.builtin.template:
+    src: sirius-rotate
+    dest: /etc/logrotate.d/
+    mode: 0644
