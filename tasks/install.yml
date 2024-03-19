@@ -23,7 +23,7 @@
     dest: /etc/syslog-ng/syslog-ng.conf
     mode: '0644'
   notify:
-    - restart syslog-ng
+    - Restart syslog-ng
 
 - name: Copy sirius.conf to /etc/syslog-ng/conf.d/
   ansible.builtin.template:
@@ -31,7 +31,7 @@
     dest: /etc/syslog-ng/conf.d/sirius.conf
     mode: '0644'
   notify:
-    - restart syslog-ng
+    - Restart syslog-ng
 
 - name: Add conf to logrotate
   ansible.builtin.template:
