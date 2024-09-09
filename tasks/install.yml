@@ -10,6 +10,10 @@
       ansible.builtin.package:
         name: syslog-ng
         state: present
+      register: pkg_result
+      retries: 12
+      delay: 10
+      until: pkg_result is success
 
     - name: Enable and start syslog-ng
       ansible.builtin.service:
@@ -37,4 +41,4 @@
   ansible.builtin.template:
     src: sirius-rotate
     dest: /etc/logrotate.d/
-    mode: 0644
+    mode: '0644'
